@@ -23,35 +23,25 @@ def evolve(outmap, curcounts):
 
 def evolveNTimes(outmap, startcounts, num):
     curcounts = startcounts
-    i = 0
-    while i < num:
+    for i in range(num):
         curcounts = evolve(outmap, curcounts)
-        i += 1
     return curcounts
 
 def getLetterCounts(paircounts):
     lettercounts = {}
     for pair in paircounts:
         for l in pair:
-            if l in lettercounts:
-                lettercounts[l] += paircounts[pair]/2
-            else:
-                lettercounts[l] = paircounts[pair]/2
+            lettercounts[l] = lettercounts.get(l, 0) + paircounts[pair]/2
 
     lettercounts[template[0]] += .5
     lettercounts[template[-1]] += .5
     return lettercounts
 
 def extremeDif(lc):
-    lclist = []
-    for x in lc.items():
-        lclist.append(x)
-
+    lclist = list(lc.items())
     lclist.sort(key = lambda x: x[1])
     min = lclist[0][1]
-    lclist.sort(key = lambda x: -x[1])
-    max = lclist[0][1]
-
+    max = lclist[-1][1]
     return max - min
 
 basecounts = dict(nullcounts)
