@@ -7,7 +7,7 @@ yr = range(-97, -63 + 1)
 
 ##1
                                             # 2r1 <= y0(y0 + 1) - t(t + 1) <= 2r2;
-print(-yr.start * (-yr.start - 1)/2)        # the sums of consecutive integers up to n are 2n apart;  t = r1, y0 = r1 - 1
+print(-yr.start * (-yr.start - 1)/2)        # the products of n*(n+1) are 2n apart;  t = r1, y0 = r1 - 1
 
 ##2
 count = 0
