@@ -32,42 +32,30 @@ else:
 print(losingScore * rolls)
 
 ##2
-def getPoints(s0, rolls):
-    t = len(rolls)
-    p = 0
-    s = s0
-    for r in rolls:
-        s = (s + r) % 10
-        p += s + 1
-    return p
-
 pmap = {3:1, 4:3, 5:6, 6:7, 7:6, 8:3, 9:1}  # the number of ways to get each value by adding up the three dice
 rollRange = range(3, 10)
 winRange = range(3, 11)                     # from any starting point, it takes a minimum of 3 and a maximum of 10 turns to cross 21
 
-def get21Counts(s0, rolls):
+def get21Counts(s0, points, turn):
     p21s = dict.fromkeys(winRange, 0)
     for r in rollRange:
-        next = list(rolls)
-        next.append(r)
-        p = getPoints(s0, next)
+        next = (s0 + r) % 10
+        p = points + next + 1
+        t = turn + 1
 
         if p >= 21:
-            universes = 1
-            for r in next:
-                universes *= pmap[r]        # a sequence of rolls does not represent 1 universe, since each roll represents multiple permutations
-            p21s[len(next)] += universes    # of the 3 dice values
+            p21s[t] += pmap[r]
         else:
-            branches = get21Counts(s0, next)
+            branches = get21Counts(next, p, t)
             for length in branches:
-                p21s[length] += branches[length]
+                p21s[length] += branches[length] * pmap[r]
     return p21s
 
-p1_21s = get21Counts(p1start, [])   # dictionaries where the keys are the player's turns, and the values are the number of universes
-p2_21s = get21Counts(p2start, [])   # in which the player crosses 21 on that turn
+p1_21s = get21Counts(p1start, 0, 0)   # dictionaries where the keys are the player's turns, and the values are the number of universes
+p2_21s = get21Counts(p2start, 0, 0)   # in which the player crosses 21 on that turn
 
-p1_alives = dict.fromkeys(range(2,11), 0)
-p2_alives = dict.fromkeys(range(2,11), 0)
+p1_alives = dict.fromkeys(range(2,11), 0)   # dictionaries where the keys are the player's turns and the values are the number of universe
+p2_alives = dict.fromkeys(range(2,11), 0)   # in which the player hasn't crossed 21 yet
 p1_alives[2] = 27**2
 p2_alives[2] = 27**2
 for i in p1_21s:
@@ -84,9 +72,11 @@ print(max(p1, p2))
 
 # After I finished my first solution I checked out the subreddit and saw people talking about memoization. I looked it up and thought I'd
 # give it a shot. My first stab actually looked a lot like this, but without the cache it didn't run in a reasonable amount of time. I'm 
-# glad that I wasn't initially familiar with the strategy though, since it forced me to come up with the solution above which I really like.
+# glad that I wasn't initially familiar with the strategy though, since it forced me to come up with the solution above, which I really like.
 
+pmap = {3:1, 4:3, 5:6, 6:7, 7:6, 8:3, 9:1}
 cache = {}
+
 def getWins(positions, points, turn):
     wins = [0,0]
     for r in rollRange:
@@ -112,4 +102,6 @@ def getWins(positions, points, turn):
         wins[0] += branchwins[0] * pmap[r]
         wins[1] += branchwins[1] * pmap[r]
     return wins
-print(getWins([], (p1start, p2start), (0,0), 0))
+
+wins = getWins((p1start, p2start), (0,0), 0)
+print(max(wins))
