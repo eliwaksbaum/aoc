@@ -82,7 +82,10 @@ for i in p1_21s:                    # same for p2, but since they go second we c
 print(max(p1, p2))
 
 
-# After I finished my first solution I checked out the subreddit and saw people talking about memoization. 
+# After I finished my first solution I checked out the subreddit and saw people talking about memoization. I looked it up and thought I'd
+# give it a shot. My first stab actually looked a lot like this, but without the cache it didn't run in a reasonable amount of time. I'm 
+# glad that I wasn't initially familiar with the strategy though, since it forced me to come up with the solution above which I really like.
+
 cache = {}
 def getWins(positions, points, turn):
     wins = [0,0]
