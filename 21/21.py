@@ -80,3 +80,33 @@ for i in p1_21s:                    # same for p2, but since they go second we c
     p1 += p1_21s[i] * p2_alives[i-1]
     p2 += p2_21s[i] * p1_alives[i]
 print(max(p1, p2))
+
+
+# After I finished my first solution I checked out the subreddit and saw people talking about memoization. 
+cache = {}
+def getWins(positions, points, turn):
+    wins = [0,0]
+    for r in rollRange:
+        branchwins = [0,0]
+        if positions in cache and points in cache[positions] and turn%2 in cache[positions][points] and r in cache[positions][points][turn%2]:
+            memowins = cache[positions][points][turn%2][r]
+            branchwins[0] = memowins[0]
+            branchwins[1] = memowins[1]
+        else:
+            if turn%2 == 0:
+                nextpos = ((positions[0] + r) % 10, positions[1])
+                nextpts = (points[0] + nextpos[0] + 1, points[1])
+            else:
+                nextpos = (positions[0], (positions[1] + r) % 10)
+                nextpts = (points[0], points[1] + nextpos[1] + 1)
+            
+            if nextpts[turn%2] >= 21:
+                branchwins[turn%2] = 1
+            else:
+                branchwins = getWins(nextpos, nextpts, turn + 1)
+            cache.setdefault(positions, {}).setdefault(points, {}).setdefault(turn%2, {})[r] = branchwins
+        
+        wins[0] += branchwins[0] * pmap[r]
+        wins[1] += branchwins[1] * pmap[r]
+    return wins
+print(getWins([], (p1start, p2start), (0,0), 0))
