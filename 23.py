@@ -85,6 +85,7 @@ class heap:
         return s.array[s.eToIndex[e]][1] if e in s.eToIndex else -1
 
 energymap = {"a":1, "b": 10, "c": 100, "d":1000}
+gmap = {"a":2, "b":4, "c":6, "d":8}
 
 def fromPositions(a, b, c, d):
     amphipods = {}
@@ -112,29 +113,51 @@ def fromDictToString(dic):
         s += k + dic[k][0]
     return s
 
-def getConnections(pos, posToSpecies, room):
-    connections = []
-    energy = energymap[posToSpecies[pos]]
+def getHPath(start, end):
+    rs = start[0]
+    cs = 10 if start[1] == "X" else int(start[1])
+    re = end[0]
+    ce = 10 if end[1] == "X" else int(end[1])
 
-    for path in room[pos]:
+    if rs != "h":
+        return getHPath("h"+str(gmap[rs]), end)
+    if re != "h":
+        return getHPath(start, "h"+str(gmap[re]))
+
+    steps = []
+    for i in range(min(cs, ce) + 1, max(cs, ce) + 1):
+        step = "hX" if i == 10 else "h" + str(i)
+        steps.append(step)
+    return steps
+
+# def getConnections(pos, posToSpecies, room):
+#     connections = []
+#     energy = energymap[posToSpecies[pos]]
+
+#     for path in room[pos]:
         
 
 def heuristic(state):
     depth = 2                               ### CHANGE WITH DEPTH
     
-    gmap = {"a":2, "b":4, "c":6, "d":8}
     pods = fromStringToDict(state)
     total = 0
     for pod in pods:
         species = pods[pod]
         room = pod[0]
+
+        path = getHPath(pod, species+"1")
+        for h in path:
+            if h in pods:
+                total += 3 * energymap[pods[h]]
+
         if species == room:
             c = int(pod[1])
-            for i in range(c + 1, depth):
+            for i in range(c, depth):
                 if pods.get(species + str(i), species) != species:
-                    total += (c + 4) * energymap[species]
+                    total += (c + 3) * energymap[species]
                     break
-            continue
+
         elif room == "h":
             c = 10 if pod[1] == "X" else int(pod[1])
             g = gmap[species]
@@ -145,14 +168,14 @@ def heuristic(state):
                         total += 3 * energymap[species]
                         break
             else:
-                total += (abs(g-c) + depth) * energymap[species]
-            continue
+                total += (abs(g-c) + 1) * energymap[species]
+
         else:
             c = int(pod[1])
             cg = gmap[pod[0]]
             tg = gmap[species]
-            total += (c+1 + abs(cg-tg) + depth) * energymap[species]
-            continue
+            total += (c + abs(cg-tg) + 1) * energymap[species]
+
     return total
 
 
@@ -230,3 +253,4 @@ def astar(src, dest):
 
 #print(astar(startState, endState))
 #print(heuristic(startState))
+print(getHPath("a1", "d1"))
