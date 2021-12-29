@@ -112,23 +112,12 @@ def fromDictToString(dic):
         s += k + dic[k][0]
     return s
 
-def getConnections(pods, room):
-    pods = fromStringToDict(pods)
+def getConnections(pos, posToSpecies, room):
     connections = []
-    for pod in pods:
-        cleanstate = dict(pods)
-        cleanstate.pop(pod)
-        species = pods[pod]
-        out = pod[0] == "h"
-        energy = energymap[species]
-        for npos in room[pod]:
-            if npos not in pods:
-                if not out or out and (npos[0] == "h" or npos[0] == species):
-                    newstate = dict(cleanstate)
-                    newstate[npos] = species
-                    connections.append((fromDictToString(newstate), energy))
+    energy = energymap[posToSpecies[pos]]
 
-    return connections
+    for path in room[pos]:
+        
 
 def heuristic(state):
     depth = 2                               ### CHANGE WITH DEPTH
@@ -170,35 +159,38 @@ def heuristic(state):
 def makeRoom(depth):
     roomGraph = {}
     for i in range(11):
-        key = "h" + str(i) if i < 10 else "hX"
-        v = []
-        if i-1 >= 0:
-            v.append("h"+str(i-1))
-        if i+1 < 11:
-            v.append("h"+str(i+1)) if i + 1 < 10 else v.append("hX")
-
+        if i%2 == 1 or i == 0 or i == 10:
+            key = "h" + str(i) if i < 10 else "hX"
+            v = []
+            for j in range(11):
+                if j != i and (j%2 == 1 or j == 0 or j == 10):
+                    n = "h" + str(j) if j < 10 else "hX"
+                    v.append((n, abs(i-j)))
         roomGraph[key] = v
 
     letters = ["a", "b", "c", "d"]
     for g, l in enumerate(letters):
-        for i in range(depth):
+        for i in range(1, depth+1):
             key = l + str(i)
             v = []
-            if i+1 < depth:
-                v.append(l+str(i+1))
+            for j in range(11):
+                if j%2 == 1 or j == 0 or j == 10:
+                    n = "h" + str(j) if j < 10 else "hX"
+                    weight = i + abs(2*(g+1) - j)
+                    v.append((n, weight))
+                    roomGraph[n].append((key, weight))
+            for k in range(1, depth+1):
+                if k != i:
+                    n = l + str(k)
+                    v.append((n, abs(i - k)))
 
-            if i == 0:
-                v.append("h"+str(2*(g+1)))
-                roomGraph["h"+str(2*(g+1))].append(l+str(0))
-            else:
-                v.append(l+str(i-1))
-
-            roomGraph[key] = v
+        roomGraph[key] = v
 
     return roomGraph
 
-room = makeRoom(2)
-#room = makeRoom(1)
+#room = makeRoom(2)
+room = makeRoom(1)
+print(room)
 startState = fromPositions(["a1", "d1"], ["a0", "c0"], ["b0", "c1"], ["b1", "d0"])
 endState = fromPositions(["a0", "a1"], ["b0", "b1"], ["c0", "c1"], ["d1", "d0"])
 #startState = fromPositions(["d0"], ["c0"], ["b0"], ["a0"])
@@ -218,15 +210,17 @@ def astar(src, dest):
     while dest not in visited:
         cur = fscore.removeMin()
 
-        for nstate, energy in getConnections(cur, room):
-            if not nstate in visited:
-                cost = gscore[cur] + energy
-                pre = gscore.get(nstate, -1)
-                if pre == -1 or cost < pre:
-                    gscore[nstate] = cost
-                    prev[nstate] = list(prev[cur])
-                    prev[nstate].append(nstate)
-                    fscore.put(nstate, + heuristic(nstate))
+        amphipods = fromStringToDict(cur)
+        for pod in amphipods:
+            for nstate, energy in getConnections(pod, amphipods, room):
+                if not nstate in visited:
+                    cost = gscore[cur] + energy
+                    pre = gscore.get(nstate, -1)
+                    if pre == -1 or cost < pre:
+                        gscore[nstate] = cost
+                        prev[nstate] = list(prev[cur])
+                        prev[nstate].append(nstate)
+                        fscore.put(nstate, + heuristic(nstate))
         
         if cur == dest:
             print(prev[cur])
@@ -234,5 +228,5 @@ def astar(src, dest):
         
         visited.add(cur)
 
-print(astar(startState, endState))
-print(heuristic(startState))
+#print(astar(startState, endState))
+#print(heuristic(startState))
