@@ -113,71 +113,77 @@ def fromDictToString(dic):
         s += k + dic[k][0]
     return s
 
-def getHPath(start, end):
-    rs = start[0]
-    cs = 10 if start[1] == "X" else int(start[1])
-    re = end[0]
-    ce = 10 if end[1] == "X" else int(end[1])
+cache = {}
+def getPath(start, end, room):
+    if (start, end) in cache:
+        return cache[(start, end)]
+    elif (end, start) in cache:
+        steps = list(cache[end, start])
+        steps.remove(start)
+        steps.append(end)
+        cache[(start, end)] = steps
+        return steps
+    else:
+        sr = start[0]
+        sc = 10 if start[1] == "X" else int(start[1])
+        er = end[0]
+        ec = 10 if end[1] == "X" else int(end[1])
 
-    if rs != "h":
-        return getHPath("h"+str(gmap[rs]), end)
-    if re != "h":
-        return getHPath(start, "h"+str(gmap[re]))
+        steps = []
 
-    steps = []
-    for i in range(min(cs, ce) + 1, max(cs, ce) + 1):
-        step = "hX" if i == 10 else "h" + str(i)
-        steps.append(step)
-    return steps
-
-# def getConnections(pos, posToSpecies, room):
-#     connections = []
-#     energy = energymap[posToSpecies[pos]]
-
-#     for path in room[pos]:
+        if sr != "h":
+            for i in range(1, sc):
+                steps.append(sr + str(i))
+            sc = gmap[sr]
+        if er != "h":
+            for i in range(1, ec + 1):
+                steps.append(er + str(i))
+            ec = gmap[er]
         
+        for i in range(min(sc, ec), max(sc, ec) + 1):
+            step = "hX" if i == 10 else "h" + str(i)
+            if step in room and step != start:
+                steps.append(step)
+        
+        cache[(start, end)] = steps
+        return steps
 
-def heuristic(state):
-    depth = 2                               ### CHANGE WITH DEPTH
+def getConnections(pos, posToSpecies, room):
+    connections = []
+    species = posToSpecies[pos]
+    energy = energymap[species]
+    cleandict = dict(posToSpecies)
+    cleandict.pop(pos)
+
+    for node, weight in room[pos]:
+        allclear = True
+        for step in getPath(pos, node, room):
+            if step in cleandict:
+                allclear = False
+                break
+
+        if not allclear:
+            continue
+
+        newstate = dict(cleandict)
+        newstate[node] = species
+        connections.append((fromDictToString(newstate), weight * energy))
     
-    pods = fromStringToDict(state)
+    return connections
+
+def heuristic(state, room):
     total = 0
-    for pod in pods:
-        species = pods[pod]
-        room = pod[0]
+    amphipods = fromStringToDict(state)
+    for pos in amphipods:
+        species = amphipods[pos]
+        energy = energymap[species]
+        dest = species + "1"
 
-        path = getHPath(pod, species+"1")
-        for h in path:
-            if h in pods:
-                total += 3 * energymap[pods[h]]
-
-        if species == room:
-            c = int(pod[1])
-            for i in range(c, depth):
-                if pods.get(species + str(i), species) != species:
-                    total += (c + 3) * energymap[species]
-                    break
-
-        elif room == "h":
-            c = 10 if pod[1] == "X" else int(pod[1])
-            g = gmap[species]
-            if c == g:
-                for i in range(depth):
-                    r = pods.get(species + str(i), species)
-                    if r != species:
-                        total += 3 * energymap[species]
-                        break
-            else:
-                total += (abs(g-c) + 1) * energymap[species]
-
-        else:
-            c = int(pod[1])
-            cg = gmap[pod[0]]
-            tg = gmap[species]
-            total += (c + abs(cg-tg) + 1) * energymap[species]
+        for node, weight in room[pos]:
+            if node == dest:
+                total += energy * weight
 
     return total
-
 
 def makeRoom(depth):
     roomGraph = {}
@@ -192,32 +198,41 @@ def makeRoom(depth):
         roomGraph[key] = v
 
     letters = ["a", "b", "c", "d"]
-    for g, l in enumerate(letters):
+    for l in letters:
         for i in range(1, depth+1):
             key = l + str(i)
             v = []
+            
             for j in range(11):
                 if j%2 == 1 or j == 0 or j == 10:
                     n = "h" + str(j) if j < 10 else "hX"
-                    weight = i + abs(2*(g+1) - j)
+                    weight = i + abs(gmap[l] - j)
                     v.append((n, weight))
                     roomGraph[n].append((key, weight))
+            
             for k in range(1, depth+1):
                 if k != i:
                     n = l + str(k)
                     v.append((n, abs(i - k)))
+            
+            for r in letters:
+                if r != l:
+                    for m in range(1, depth+1):
+                        n = r + str(m)
+                        weight = i + abs(gmap[l] - gmap[r]) + m
+                        v.append((n, weight))
 
-        roomGraph[key] = v
+            roomGraph[key] = v
 
     return roomGraph
 
-#room = makeRoom(2)
-room = makeRoom(1)
+room = makeRoom(2)
+#room = makeRoom(1)
 print(room)
-startState = fromPositions(["a1", "d1"], ["a0", "c0"], ["b0", "c1"], ["b1", "d0"])
-endState = fromPositions(["a0", "a1"], ["b0", "b1"], ["c0", "c1"], ["d1", "d0"])
-#startState = fromPositions(["d0"], ["c0"], ["b0"], ["a0"])
-#endState = fromPositions(["a0"], ["b0"], ["c0"], ["d0"])
+startState = fromPositions(["a2", "d2"], ["a1", "c1"], ["b1", "c2"], ["b2", "d1"])
+endState = fromPositions(["a1", "a2"], ["b1", "b2"], ["c1", "c2"], ["d1", "d2"])
+#startState = fromPositions(["d1"], ["c1"], ["b1"], ["a1"])
+#endState = fromPositions(["a1"], ["b1"], ["c1"], ["d1"])
 
 #room = makeRoom(4)
 #startState = fromPositions(["a3", "d3", "c2", "d1"], ["a0", "c0", "b2", "c1"], ["b0", "c3", "b1", "d2"], ["b3", "d0", "a1", "a2"])
@@ -228,7 +243,7 @@ def astar(src, dest):
     prev = {src:[]}
     gscore = {src:0}
     fscore = heap()
-    fscore.put(src, heuristic(src))
+    fscore.put(src, heuristic(src, room))
 
     while dest not in visited:
         cur = fscore.removeMin()
@@ -243,7 +258,7 @@ def astar(src, dest):
                         gscore[nstate] = cost
                         prev[nstate] = list(prev[cur])
                         prev[nstate].append(nstate)
-                        fscore.put(nstate, + heuristic(nstate))
+                        fscore.put(nstate, + heuristic(nstate, room))
         
         if cur == dest:
             print(prev[cur])
@@ -251,6 +266,7 @@ def astar(src, dest):
         
         visited.add(cur)
 
-#print(astar(startState, endState))
-#print(heuristic(startState))
-print(getHPath("a1", "d1"))
+print(heuristic(startState, room))
+print(getPath("a2", "d2", room))
+print(getConnections("a1", fromStringToDict(startState), room))
+print(astar(startState, endState))
