@@ -179,9 +179,16 @@ def heuristic(state, room):
         energy = energymap[species]
         dest = species + "1"
 
-        for node, weight in room[pos]:
-            if node == dest:
-                total += energy * weight
+        if pos[0] == species:
+            continue
+        else:
+            for node, weight in room[pos]:
+                if node == dest:
+                    total += energy * weight
+            
+            for step in getPath(pos, dest, room):
+                if step in amphipods:
+                    total += 3 * energymap[amphipods[step]]
 
     return total
 
@@ -227,12 +234,12 @@ def makeRoom(depth):
     return roomGraph
 
 room = makeRoom(2)
-#room = makeRoom(1)
+room = makeRoom(1)
 print(room)
 startState = fromPositions(["a2", "d2"], ["a1", "c1"], ["b1", "c2"], ["b2", "d1"])
 endState = fromPositions(["a1", "a2"], ["b1", "b2"], ["c1", "c2"], ["d1", "d2"])
-#startState = fromPositions(["d1"], ["c1"], ["b1"], ["a1"])
-#endState = fromPositions(["a1"], ["b1"], ["c1"], ["d1"])
+startState = fromPositions(["d1"], ["c1"], ["b1"], ["a1"])
+endState = fromPositions(["a1"], ["b1"], ["c1"], ["d1"])
 
 #room = makeRoom(4)
 #startState = fromPositions(["a3", "d3", "c2", "d1"], ["a0", "c0", "b2", "c1"], ["b0", "c3", "b1", "d2"], ["b3", "d0", "a1", "a2"])
