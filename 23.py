@@ -151,11 +151,15 @@ def getPath(start, end, room):
 def getConnections(pos, posToSpecies, room):
     connections = []
     species = posToSpecies[pos]
+    curroom = pos[0]
     energy = energymap[species]
     cleandict = dict(posToSpecies)
     cleandict.pop(pos)
 
     for node, weight in room[pos]:
+        if curroom == "h" and node[0] != species:
+            continue
+
         allclear = True
         for step in getPath(pos, node, room):
             if step in cleandict:
@@ -186,23 +190,14 @@ def heuristic(state, room):
                 if node == dest:
                     total += energy * weight
             
-            for step in getPath(pos, dest, room):
-                if step in amphipods:
-                    total += 3 * energymap[amphipods[step]]
+            # for step in getPath(pos, dest, room):
+            #     if step in amphipods:
+            #         total += 3 * energymap[amphipods[step]]
 
     return total
 
 def makeRoom(depth):
     roomGraph = {}
-    for i in range(11):
-        if i%2 == 1 or i == 0 or i == 10:
-            key = "h" + str(i) if i < 10 else "hX"
-            v = []
-            for j in range(11):
-                if j != i and (j%2 == 1 or j == 0 or j == 10):
-                    n = "h" + str(j) if j < 10 else "hX"
-                    v.append((n, abs(i-j)))
-        roomGraph[key] = v
 
     letters = ["a", "b", "c", "d"]
     for l in letters:
@@ -215,31 +210,20 @@ def makeRoom(depth):
                     n = "h" + str(j) if j < 10 else "hX"
                     weight = i + abs(gmap[l] - j)
                     v.append((n, weight))
-                    roomGraph[n].append((key, weight))
-            
-            for k in range(1, depth+1):
-                if k != i:
-                    n = l + str(k)
-                    v.append((n, abs(i - k)))
-            
-            for r in letters:
-                if r != l:
-                    for m in range(1, depth+1):
-                        n = r + str(m)
-                        weight = i + abs(gmap[l] - gmap[r]) + m
-                        v.append((n, weight))
+                    nedges = roomGraph.setdefault(n, [])
+                    nedges.append((key, weight))
 
             roomGraph[key] = v
 
     return roomGraph
 
 room = makeRoom(2)
-room = makeRoom(1)
+#room = makeRoom(1)
 print(room)
-startState = fromPositions(["a2", "d2"], ["a1", "c1"], ["b1", "c2"], ["b2", "d1"])
+startState = fromPositions(["c1", "c2"], ["b1", "d2"], ["a1", "a2"], ["b2", "d1"])
 endState = fromPositions(["a1", "a2"], ["b1", "b2"], ["c1", "c2"], ["d1", "d2"])
-startState = fromPositions(["d1"], ["c1"], ["b1"], ["a1"])
-endState = fromPositions(["a1"], ["b1"], ["c1"], ["d1"])
+#startState = fromPositions(["d1"], ["c1"], ["b1"], ["a1"])
+#endState = fromPositions(["a1"], ["b1"], ["c1"], ["d1"])
 
 #room = makeRoom(4)
 #startState = fromPositions(["a3", "d3", "c2", "d1"], ["a0", "c0", "b2", "c1"], ["b0", "c3", "b1", "d2"], ["b3", "d0", "a1", "a2"])
@@ -254,6 +238,7 @@ def astar(src, dest):
 
     while dest not in visited:
         cur = fscore.removeMin()
+        pass
 
         amphipods = fromStringToDict(cur)
         for pod in amphipods:
@@ -265,7 +250,7 @@ def astar(src, dest):
                         gscore[nstate] = cost
                         prev[nstate] = list(prev[cur])
                         prev[nstate].append(nstate)
-                        fscore.put(nstate, + heuristic(nstate, room))
+                        fscore.put(nstate, cost)# + heuristic(nstate, room))
         
         if cur == dest:
             print(prev[cur])
