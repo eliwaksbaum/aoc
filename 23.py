@@ -268,6 +268,8 @@ endState = fromLists(["a", "a"], ["b", "b"], ["c", "c"], ["d", "d"])
 #startState = fromPositions(["a3", "d3", "c2", "d1"], ["a0", "c0", "b2", "c1"], ["b0", "c3", "b1", "d2"], ["b3", "d0", "a1", "a2"])
 #endState = fromPositions(["a0", "a1" "a2", "a3"], ["b0", "b1", "b2", "b3"], ["c0", "c1", "c2", "c3"], ["d1", "d0", "d2", "d3"])
 
+
+
 def heuristic(state):
     return 0
 
@@ -300,3 +302,26 @@ def astar(src, dest):
         visited.add(cur)
 
 print(getConnections(fromLists(["a", "a"], ["d", "b"], ["c", "c"], ["b","d"]), weights))
+
+
+
+
+mincache = {}
+def dive(state, weights, dest):
+    string = dictToString(state)
+    if string in mincache:
+        return mincache[string]
+    else:
+        branches = []
+        for nstate, cost in getConnections(state, weights):
+            steptotal = cost
+            if nstate != dest:
+                branchtotal = dive(nstate, weights, dest)
+                steptotal += branchtotal
+            branches.append(steptotal)
+
+    energy = min(branches) if len(branches) > 0 else math.inf
+    mincache[string] = energy
+    return energy
+
+print(dive(startState, weights, endState))
