@@ -15,7 +15,7 @@ int PointsFromRound1(char them, char me)
     return result_points + me_num + 1;
 }
 
-int score1 = lines.Select((l, i) => PointsFromRound1(l[0], l[2])).Sum();
+int score1 = lines.Select((l) => PointsFromRound1(l[0], l[2])).Sum();
 Console.WriteLine(score1);
 
 //2
@@ -30,5 +30,5 @@ int PointsFromRound2(char them, char result)
     return result_points + me_num + 1;
 }
 
-int score2 = lines.Select((l, i) => PointsFromRound2(l[0], l[2])).Sum();
+int score2 = lines.Select((l) => PointsFromRound2(l[0], l[2])).Sum();
 Console.WriteLine(score2);

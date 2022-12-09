@@ -1,9 +1,9 @@
 ﻿string input = File.ReadAllText("input.txt");
 string[] elves = input.Split("\n\n");
 
-List<int> calories = elves.Select((elf, i) => elf.Split("\n"))
-    .Select((snacks, i) => 
-        snacks.Select((snack, j) => Int32.Parse(snack))
+List<int> calories = elves.Select((elf) => elf.Split("\n"))
+    .Select((snacks) => 
+        snacks.Select((snack) => Int32.Parse(snack))
             .Sum()
     ).ToList();
     

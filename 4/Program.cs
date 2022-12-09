@@ -2,8 +2,8 @@
 
 IEnumerable<int[]> assignment_pairs = lines.Select(
         (line, i) => line.Split(',')
-        .SelectMany((assignment, i) => assignment.Split('-'))
-        .Select((num, i) => Int32.Parse(num))
+        .SelectMany((assignment) => assignment.Split('-'))
+        .Select((num) => Int32.Parse(num))
         .ToArray()
     );
 

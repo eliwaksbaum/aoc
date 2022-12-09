@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 
 Stack<char>[] stacks = File.ReadAllLines("stacks.txt")
-    .Select((line, i) =>
+    .Select((line) =>
         line.Reverse().Aggregate(new Stack<char>(), (seed, next) => {
             seed.Push(next);
             return seed;
@@ -23,7 +23,7 @@ Regex num_reg = new Regex(@"\d{1,2}");
 Move MoveFromLine(string line)
 {
     int[] matches = num_reg.Matches(line)
-        .Select((m, i) => Int32.Parse(m.Value))
+        .Select((m) => Int32.Parse(m.Value))
         .ToArray();
     return new Move(){amount = matches[0], source = matches[1] - 1, target = matches[2] - 1};
 }
