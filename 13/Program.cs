@@ -11,17 +11,30 @@ int sum = input
 Console.WriteLine(sum);
 
 //2
-List<Tuple<Packet, string>> ordered = input
-    .Where(s => !String.IsNullOrWhiteSpace(s))
-    .Prepend("[[2]]")
-    .Prepend("[[6]]")
-    .Select(line => new Tuple<Packet, string> (Extract(line, 0, out int _), line))
-    .OrderBy(x => x.Item1, new PacketVisitor())
-    .ToList();
+Packet two = Extract("[[2]]", 0, out int _);
+Packet six = Extract("[[6]]", 0, out int _);
+int two_i = 1;
+int six_i = 2;
 
-int two = ordered.FindIndex(x => x.Item2 == "[[2]]") + 1;
-int six = ordered.FindIndex(x => x.Item2 == "[[6]]") + 1;
-Console.WriteLine(two * six);
+foreach (string s in input)
+{
+    if (!String.IsNullOrWhiteSpace(s))
+    {
+        Packet cur = Extract(s, 0, out int _);
+        
+        int before_two = new PacketVisitor().Compare(cur, two);
+        if (before_two < 0)
+        {
+            two_i++;
+        }
+        int before_six = new PacketVisitor().Compare(cur, six);
+        if (before_six < 0)
+        {
+            six_i++;
+        }
+    }
+}
+Console.WriteLine(two_i * six_i);
 
 
 Packet Extract(string s, int start, out int end)
