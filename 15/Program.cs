@@ -57,7 +57,7 @@ for (int i = 0; i < sensors.Count - 1; i++)
         intersections.UnionWith(cur.GetIntersections(other));
     }
 }
-intersections.RemoveWhere(p => (p.x - p.y)/2 < 0 | (p.x - p.y)/2 > 4000000 | (p.x + p.y)/2 < 0 | (p.x + p.y)/2 > 4000000);
+intersections.RemoveWhere(p => (p.x - p.y)/2 < 0 || (p.x - p.y)/2 > 4000000 || (p.x + p.y)/2 < 0 || (p.x + p.y)/2 > 4000000);
 foreach (Sensor s in sensors)
 {
     intersections.RemoveWhere(p => s.IsPointStrictlyWithin(p));
