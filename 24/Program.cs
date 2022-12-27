@@ -48,16 +48,14 @@ int back = Dodge(goal with {t = there}, 0, 0);
 int there_again = Dodge(start with {t = back}, columns.Length - 1, rows.Length -1);
 Console.WriteLine(there_again);
 
-
 int Dodge(Point init, int endX, int endY)
 {
     HashSet<Point> reached = new();
-    Queue<Point> q = new();
-    q.Enqueue(init);
+    PriorityQueue<Point, int> ordered_reached = new();
+    Point cur = init;
 
     while(true)
     {
-        Point cur = q.Dequeue();
         foreach (Point n in GetNeighbors(cur))
         {
             if (n.x == endX && n.y == endY)
@@ -66,10 +64,12 @@ int Dodge(Point init, int endX, int endY)
             }
             else if (!reached.Contains(n))
             {
-                q.Enqueue(n);
+                int manhattan = Math.Abs(endX - n.x) + Math.Abs(endY - n.y);
                 reached.Add(n);
+                ordered_reached.Enqueue(n, n.t + manhattan);
             }
         }
+        cur = ordered_reached.Dequeue();
     }
 }
 
