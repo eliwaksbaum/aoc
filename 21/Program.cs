@@ -19,54 +19,36 @@ Console.WriteLine(Monkey.Get("root").GetValue());
 //2
 double goal = Monkey.Get("pfjc").GetValue();
 
-int first_power = 0;
+double hi = 0;
+double lo = 0;
 for (int i = 0; i < 30; i += 1)
 {
     double result = Run("lttc", Math.Pow(10, i));
-    if (result < 0)
+    if (result < goal)
     {
-        first_power = i-1;
+        hi = Math.Pow(10, i);
+        lo = Math.Pow(10, i-1);
         break;
     }
 }
 
-int power_space = first_power + 1;
-List<int> digits = new();
-while (power_space > 2)
+while (hi - lo > 100)
 {
-    double[] results = new double[10];
-    for (int i = 0; i < 10; i++)
+    double mid = Math.Floor((hi + lo) / 2);
+    double result = Run("lttc", mid);
+    if (result > goal)
     {
-        double test = Narrow(first_power, digits) + Math.Pow(10, power_space - 1) * i;        
-        double result = Run("lttc", test);
-        results[i] = result; 
-    }
-
-    if (results.All(x => x < goal))
-    {
-        digits.Add(0);
-    }
-    if (results.All(x => x > goal))
-    {
-        digits.Add(9);
+        lo = mid;
     }
     else
     {
-        for (int j = 0; j < 10; j++)
-        {
-            if (results[j] < goal)
-            {
-                digits.Add(j-1);
-                break;
-            }
-        }
+        hi = mid;
     }
-    power_space--;
 }
 
 for (double i = 0; i < 100; i++)
 {
-    double humn = Narrow(first_power, digits) + i;
+    double humn = lo + i;
     double result = Run("lttc", humn);
     if (goal - result == 0)
     {
@@ -74,7 +56,6 @@ for (double i = 0; i < 100; i++)
         break;
     }
 }
-
 
 
 double Run(string interest, double humn)
@@ -90,16 +71,6 @@ double Run(string interest, double humn)
     }
 
     return Monkey.Get(interest).GetValue();
-}
-
-double Narrow(int start, List<int> digits)
-{
-    double n = Math.Pow(10, start);
-    for (int i = 0; i < digits.Count; i++)
-    {
-        n += digits[i] * Math.Pow(10, start - i);
-    }
-    return n;
 }
 
 void Parse(string[] input, List<NumberMonkey> starters, List<ComputerMonkey> waiters)
