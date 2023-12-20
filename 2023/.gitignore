@@ -1,2 +1,5 @@
-target/
+obj/
+bin/
+*.csproj
+*.sln
 .vscode/
